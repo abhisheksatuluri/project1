@@ -79,12 +79,23 @@ export async function POST(request: NextRequest) {
             console.log("Live fetch failed, using demo data...");
             const demoData = getDemoData(username) || getRandomDemoData();
             isDemoMode = true;
-            profile = demoData.profile;
+
+            // Use demo data for tweets and analysis, but KEEP the requested username
             tweets = demoData.tweets;
             analysis = demoData.analysis;
 
-            if (!getDemoData(username)) {
-                profile = { ...profile, displayName: `Demo: ${profile.displayName}` };
+            // Preserve the original requested username, use demo profile only for display name/bio
+            if (getDemoData(username)) {
+                // Exact match for demo user
+                profile = demoData.profile;
+            } else {
+                // Unknown user - keep their username but use demo analysis
+                profile = {
+                    username: username,  // Keep the requested username
+                    displayName: `@${username} (Demo Mode)`,
+                    avatarUrl: `https://unavatar.io/twitter/${username}`,
+                    bio: "Using demo data for demonstration purposes.",
+                };
             }
         }
 
